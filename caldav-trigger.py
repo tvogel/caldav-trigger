@@ -12,6 +12,9 @@ import requests
 
 from logic import HeatNeededIndicator
 
+EXIT_OK                = 0
+EXIT_WEBREQUEST_FAILED = 1
+
 def main() -> int:
     dotenv.load_dotenv()
 
@@ -51,8 +54,9 @@ def main() -> int:
             , action=webhooks_heat_on_action if need_heating else webhooks_heat_off_action)
         request = requests.get(webhooks_action_url)
         print(wrapper.fill("Webhook request result: %i" % request.status_code))
+        return EXIT_OK if request.status_code == 200 else EXIT_WEBREQUEST_FAILED
 
-    return os.EX_OK
+    return EXIT_OK
 
 if __name__ == '__main__':
     sys.exit(main())
