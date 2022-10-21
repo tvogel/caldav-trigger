@@ -182,8 +182,8 @@ def test_is_needed_overlapping_events(mocker):
         , ( make_datetime(13,45, 0,  0), True )
         , ( make_datetime(13,59,59,999), True )
         , ( make_datetime(14, 0, 0,  0), False ) # bug?
-                                                # Happens because each event has preheat / cooloff applied individually and then,
-                                                # they donot in fact overlap. Could first join overlaps and then apply margins.
+                                                 # Happens because each event has preheat / cooloff applied individually and then,
+                                                 # they donot in fact overlap. Could first join overlaps and then apply margins.
         , ( make_datetime(14,14,59,999), False )
         , ( make_datetime(14,15, 0,  0), True )
         , ( make_datetime(14,19,59,999), True )

@@ -38,9 +38,7 @@ class HeatNeededIndicator:
 
         for event in calendar.date_search(start=begin_search_window, end=end_search_window, verify_expand=True):
             vobj = event.vobject_instance
-            # vobj.prettyPrint()
             try:
-                # print ("VOBJ", vobj)
                 if self.no_heat_tag is not None and vobj.vevent.description.value.find(self.no_heat_tag) >= 0:
                     if self.wrapper is not None:
                         print(self.wrapper.fill("Found event %s with %s in description:\n%s" %
@@ -50,7 +48,7 @@ class HeatNeededIndicator:
                 # no description in event: fine!
                 pass
             if cooloff_timestamp is not None and vobj.vevent.dtend.value <= cooloff_timestamp:
-                # cooloff already begun:
+                # cooloff already has begun:
                 continue
 
             if self.wrapper is not None:
