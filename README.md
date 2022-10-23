@@ -7,7 +7,7 @@ correspondingly one of two web requests. In order to run this script regularly,
 use `cron` or a similar service. I highly recommend using
 [cronic](https://habilis.net/cronic/) for wrapping the call to this script in
 cron. Also, logging can be achieved using `tee -a` to a file of your choice
-(see `<caldav-trigger.sh>`).
+(see [`caldav-trigger.sh`](caldav-trigger.sh)).
 
 Even though this script was written for smart heating valves, it can of course
 be used for anything that you can control in an on/off fashion using web
@@ -15,7 +15,7 @@ requests.
 
 Parameters and credentials for accessing the CalDAV resource and invoking the
 web request are configured using the system environment or a `.env` file. See
-`example.env`.
+[`example.env`](example.env).
 
 Furthermore, there are three parameters controlling the behavior:
 * `preheat_minutes`: This time ahead of an occupation, the `heat_on` action is
@@ -49,7 +49,9 @@ changes effective.
 
 ## Code
 
-The CalDAV and web request access is coded in the main script, the evaluation
-logic is in `logic.py` with `pytest-mock` unit-tests in `logic_test.py`.
+The CalDAV and web request access is coded in the main script
+[`caldav-trigger.py`](caldav-trigger.py), the evaluation logic is in
+[`logic.py`](logic.py) with `pytest-mock` unit-tests in
+[`logic_test.py`](logic_test.py).
 
 
