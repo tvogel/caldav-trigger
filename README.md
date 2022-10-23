@@ -22,8 +22,8 @@ Furthermore, there are three parameters controlling the behavior:
   invoked.
 * `cooloff_minutes`: This time ahead of the end of an occupation, the `heat_off`
   action is invoked.
-* `no_heat_tag`: The command word is looked for in the descrption of an
-  occupation. If found, the respective occuption is ignored and heating is not
+* `no_heat_tag`: This command word is looked for in the descrption of an
+  occupation. If found, the respective entry is ignored and heating is not
   turned on.
 
   ⚠️ The command has to appear in the *description* of the occupation, not the
