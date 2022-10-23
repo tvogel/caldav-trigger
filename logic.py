@@ -1,4 +1,3 @@
-import string
 import vobject
 import datetime
 import time
