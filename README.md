@@ -36,7 +36,7 @@ that occupations needing heating are clearly recognizable:
 
 * Tentative occupations such as reservations in advance should be marked using
   the `no_heat_tag` command.
-* Multi-day occupation have to be entered as recurring events with the actually
+* Multi-day occupation has to be entered as recurring events with the actually
   occupied times, i.e. use five events *Mo-Fr, 10-16h each* instead of a single
   continuous event *Mo 10h - Fr 16h*. In the latter case, the script would
   turn on heating also during the evenings and nights!
