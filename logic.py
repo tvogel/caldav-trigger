@@ -35,7 +35,7 @@ class HeatNeededIndicator:
             begin_search_window = cooloff_timestamp
             cooloff_timestamp = None
 
-        for event in calendar.date_search(start=begin_search_window, end=end_search_window, verify_expand=True):
+        for event in calendar.date_search(start=begin_search_window, end=end_search_window):
             vobj = event.vobject_instance
             try:
                 if self.no_heat_tag is not None and vobj.vevent.description.value.find(self.no_heat_tag) >= 0:
