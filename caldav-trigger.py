@@ -15,12 +15,17 @@ from logic import HeatNeededIndicator
 EXIT_OK                = 0
 EXIT_WEBREQUEST_FAILED = 1
 
+def float_or_none(value):
+    return None if value is None else float(value)
+
 def main() -> int:
     dotenv.load_dotenv()
 
     caldav_url = os.getenv('caldav_url')
     caldav_user = os.getenv('caldav_user')
     caldav_password = os.getenv('caldav_password')
+    caldav_timeout = float_or_none(os.getenv('caldav_timeout'))
+
     calendar_id = os.getenv('calendar_id')
     no_heat_tag = os.getenv('no_heat_tag')
 
@@ -31,6 +36,7 @@ def main() -> int:
     webhooks_key = os.getenv('webhooks_key')
     webhooks_heat_on_action = os.getenv('webhooks_heat_on_action')
     webhooks_heat_off_action = os.getenv('webhooks_heat_off_action')
+    webhooks_timeout = float_or_none(os.getenv('webhooks_timeout'))
 
     now = datetime.datetime.now().astimezone()
     print("Checking at %s" % now)
@@ -40,7 +46,7 @@ def main() -> int:
     heat_needed_indicator = HeatNeededIndicator(preheat_minutes, cooloff_minutes, no_heat_tag)
     heat_needed_indicator.set_wrapper(wrapper) # for diagnostic output
 
-    with caldav.DAVClient(url=caldav_url, username=caldav_user, password=caldav_password) as client:
+    with caldav.DAVClient(url=caldav_url, username=caldav_user, password=caldav_password, timeout=caldav_timeout) as client:
         principal = client.principal()
         calendar = principal.calendar(cal_id=calendar_id)
         need_heating = heat_needed_indicator.is_needed(calendar, now)
@@ -52,7 +58,7 @@ def main() -> int:
             webhooks_url
             , key=webhooks_key
             , action=webhooks_heat_on_action if need_heating else webhooks_heat_off_action)
-        request = requests.get(webhooks_action_url)
+        request = requests.get(webhooks_action_url, timeout=webhooks_timeout)
         print(wrapper.fill("Webhook request result: %i" % request.status_code))
         return EXIT_OK if request.status_code == 200 else EXIT_WEBREQUEST_FAILED
 
