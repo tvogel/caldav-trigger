@@ -8,15 +8,12 @@ import textwrap
 
 import caldav
 import dotenv
-import requests
+import subprocess
 
 from logic import HeatNeededIndicator
 
 EXIT_OK                = 0
-EXIT_WEBREQUEST_FAILED = 1
-
-def float_or_none(value):
-    return None if value is None else float(value)
+EXIT_ACTION_FAILED     = 1
 
 def main() -> int:
     dotenv.load_dotenv()
@@ -28,15 +25,10 @@ def main() -> int:
 
     calendar_id = os.getenv('calendar_id')
     no_heat_tag = os.getenv('no_heat_tag')
+    action = os.getenv('action')
 
     preheat_minutes = int(os.getenv('preheat_minutes'))
     cooloff_minutes = int(os.getenv('cooloff_minutes'))
-
-    webhooks_url = os.getenv('webhooks_url')
-    webhooks_key = os.getenv('webhooks_key')
-    webhooks_heat_on_action = os.getenv('webhooks_heat_on_action')
-    webhooks_heat_off_action = os.getenv('webhooks_heat_off_action')
-    webhooks_timeout = float_or_none(os.getenv('webhooks_timeout'))
 
     now = datetime.datetime.now().astimezone()
     print("Checking at %s" % now)
@@ -53,16 +45,9 @@ def main() -> int:
 
     print(wrapper.fill("Heating needed" if need_heating else "No heating needed"))
 
-    if webhooks_url:
-        webhooks_action_url = str.format(
-            webhooks_url
-            , key=webhooks_key
-            , action=webhooks_heat_on_action if need_heating else webhooks_heat_off_action)
-        request = requests.get(webhooks_action_url, timeout=webhooks_timeout)
-        print(wrapper.fill("Webhook request result: %i" % request.status_code))
-        return EXIT_OK if request.status_code == 200 else EXIT_WEBREQUEST_FAILED
-
-    return EXIT_OK
+    action_result = subprocess.run([action, 'on' if need_heating else 'off' ], stdout=subprocess.PIPE)
+    print(wrapper.fill(action_result.stdout.decode()))
+    return EXIT_OK if action_result.returncode == 0 else EXIT_ACTION_FAILED
 
 if __name__ == '__main__':
     sys.exit(main())
