@@ -15,6 +15,9 @@ from logic import HeatNeededIndicator
 EXIT_OK                = 0
 EXIT_ACTION_FAILED     = 1
 
+def float_or_none(value):
+    return None if value is None else float(value)
+
 def main() -> int:
     dotenv.load_dotenv()
 
