@@ -9,6 +9,7 @@ import textwrap
 import caldav
 import dotenv
 import subprocess
+from pathlib import Path
 
 from logic import HeatNeededIndicator
 
@@ -29,6 +30,11 @@ def main() -> int:
     calendar_id = os.getenv('calendar_id')
     no_heat_tag = os.getenv('no_heat_tag')
     action = os.getenv('action')
+
+    if not os.path.isabs(action):
+        source_path = Path(__file__).resolve()
+        source_dir = source_path.parent
+        action = os.path.join(source_dir, action)
 
     preheat_minutes = int(os.getenv('preheat_minutes'))
     cooloff_minutes = int(os.getenv('cooloff_minutes'))
