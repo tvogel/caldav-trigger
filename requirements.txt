@@ -2,3 +2,6 @@ caldav >= 0.11.0
 pytest-mock
 python-dotenv
 tuya-iot-py-sdk
+tuya-device-sharing-sdk
+pyqrcode
+cryptography
