@@ -63,7 +63,8 @@ options:
   [Tuya Device Sharing SDK](https://github.com/tuya/tuya-device-sharing-sdk).
   This is easier because you can authorize the script via scanning a QR code in
   your Tuya or SmartLife app without registering a project on
-  https://iot.tuya.com/.
+  https://iot.tuya.com/. This script can also trigger arbitrary scenes using the
+  `activate <home_id> <scene_id>` command which is used by the webhook server.
 
 You can easily adapt this logic to your own action scripts by implementing new
 action scripts. Pull-requests are welcome!
@@ -72,6 +73,14 @@ The [iot-tuya.py](iot-tuya.py) and [tuya-qr-sharing.py](tuya-qr-sharing.py)
 scripts have additional commands that help in configuring the desired Tuya
 scenes and performing the QR authorization step. Please run them without
 command line parameters to see the options.
+
+## Webhook server
+As IFTTT has decided to make web-hook triggers pay-only and my use of it does
+not justify the expense, I have implemented a basic web-hook server. It
+currently only speaks unencrypted HTTP and therefore is intended to be run
+behind a reverse-proxy such as `nginx` to provide the SSL encryption layer.
+See [`example.env`](example.env) for the host/port and end-point configuration.
+
 
 ## Code
 
