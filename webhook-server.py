@@ -73,4 +73,5 @@ async def activate(scene_id: str, key: str, config: ConfigDep, client: ClientDep
 if __name__ == "__main__":
   bind_host = os.getenv("webhook_server_host", "::")
   bind_port = int(os.getenv("webhook_server_port", "8000"))
-  uvicorn.run(app, host=bind_host, port=bind_port, log_level="info")
+  root_path = os.getenv("webhook_server_root_path", None)
+  uvicorn.run(app, host=bind_host, port=bind_port, log_level="info", root_path=root_path)
