@@ -81,6 +81,14 @@ class TuyaQrSharing:
         self.token_info = token_info
         dotenv.set_key(self.dotenv_file, 'tuya_qr_sharing_token_info', json.dumps(token_info))
 
+    def reload_token_info(self) -> None:
+        dotenv_values = dotenv.dotenv_values(self.dotenv_file)
+        new_token_info = json.loads(dotenv_values['tuya_qr_sharing_token_info'])
+        if new_token_info != self.token_info:
+            print('Token info changed, reconnecting...')
+            self.token_info = new_token_info
+            self.connect()
+
     def logout(self):
         dotenv.unset_key(self.dotenv_file, 'tuya_qr_sharing_token_info')
         dotenv.unset_key(self.dotenv_file, 'tuya_qr_sharing_username')

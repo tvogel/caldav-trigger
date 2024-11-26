@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+
+from functools import cache
 import json
 import logging
 import os
@@ -15,9 +17,10 @@ app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
 
 dotenv_file = dotenv.find_dotenv(usecwd=True) or dotenv.find_dotenv()
+dotenv.load_dotenv(dotenv_file)
 
+@cache
 def get_config():
-  dotenv.load_dotenv(dotenv_file, override=True)
   logger.info(f"Configuration read from {dotenv_file}")
   scenes = dict(json.loads(os.getenv("webhook_server_scenes")))
   scene_info = "Scenes:\n"
@@ -43,11 +46,18 @@ def get_config():
     logger.info("Configuration saved.")
   return { k: v for k, v in scenes.items() if k not in skip }
 
-def get_client():
+@cache
+def make_client():
   client = tuya_qr_sharing.TuyaQrSharing(dotenv_file)
   if (result := client.connect()) != tuya_qr_sharing.EXIT_OK:
     raise HTTPException(status_code=500, detail="Failed to connect to Tuya")
   return client
+
+def get_client():
+  client = make_client()
+  client.reload_token_info()
+  return client
+
 
 ConfigDep = Annotated[dict, Depends(get_config)]
 ClientDep = Annotated[tuya_qr_sharing.TuyaQrSharing, Depends(get_client)]
@@ -70,5 +80,5 @@ async def activate(scene_id: str, key: str, config: ConfigDep, client: ClientDep
 if __name__ == "__main__":
   bind_host = os.getenv("webhook_server_host", "::")
   bind_port = int(os.getenv("webhook_server_port", "8000"))
-  root_path = os.getenv("webhook_server_root_path", None)
+  root_path = os.getenv("webhook_server_root_path", "")
   uvicorn.run(app, host=bind_host, port=bind_port, log_level="info", root_path=root_path)
