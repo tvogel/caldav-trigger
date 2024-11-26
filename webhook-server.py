@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-from functools import cache
 import json
 import logging
 import os
@@ -16,10 +15,9 @@ app = FastAPI()
 logger = logging.getLogger('uvicorn.error')
 
 dotenv_file = dotenv.find_dotenv(usecwd=True) or dotenv.find_dotenv()
-dotenv.load_dotenv(dotenv_file)
 
-@cache
 def get_config():
+  dotenv.load_dotenv(dotenv_file, override=True)
   logger.info(f"Configuration read from {dotenv_file}")
   scenes = dict(json.loads(os.getenv("webhook_server_scenes")))
   scene_info = "Scenes:\n"
@@ -45,7 +43,6 @@ def get_config():
     logger.info("Configuration saved.")
   return { k: v for k, v in scenes.items() if k not in skip }
 
-@cache
 def get_client():
   client = tuya_qr_sharing.TuyaQrSharing(dotenv_file)
   if (result := client.connect()) != tuya_qr_sharing.EXIT_OK:
