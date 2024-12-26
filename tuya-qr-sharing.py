@@ -19,6 +19,7 @@ EXIT_AUTHENTICATION_FAILED = 2
 EXIT_HOME_MISSING          = 3
 EXIT_SCENE_MISSING         = 4
 EXIT_TRIGGER_SCENE_FAILED  = 5
+EXIT_DEVICE_MISSING        = 6
 
 URL_PATH           = "apigw.iotbing.com"
 CONF_CLIENT_ID     = "HA_3y9q4ak7g4ephrvke"
@@ -185,6 +186,38 @@ class TuyaQrSharing:
                 print('    %s: %s' % (scene.scene_id, scene.name));
         return EXIT_OK
 
+    def devices(self):
+        print('Devices:')
+        for device in self.tuya_sharing_manager.device_map.values():
+            print (f'  {device.id}: {device.name} ({device.product_name})')
+            try:
+                print (f'    Local key: {device.local_key}')
+            except AttributeError:
+                pass
+            print ( '    Status:')
+            print (f'    {device.status}')
+            if len(device.function) > 0:
+                print ( '    Functions:')
+                for (function, value) in device.function.items():
+                    print (f'      {function}: {value}')
+            if len(device.status_range) > 0:
+                print ( '    Status ranges:')
+                for (status, value) in device.status_range.items():
+                    print (f'      {status}: {value}')
+            print (f'    Local strategy: {device.local_strategy}')
+
+        return EXIT_OK
+
+    def query_device(self, device_id: str):
+        try:
+            devices = self.tuya_sharing_manager.device_repository.query_devices_by_ids([device_id])
+            for device in devices:
+                print(device.status)
+                return EXIT_OK
+        except Exception as e:
+            print('Error querying device (%s)' % (e.args), file=sys.stderr)
+        return EXIT_DEVICE_MISSING
+
     def activate(self, home_id: str, scene_id: str) -> int:
         print(f"Triggering scene {scene_id} in home {home_id}...")
         try:
@@ -250,7 +283,7 @@ def main() -> int:
     except IndexError:
         cmd = ''
 
-    cmds = [ 'login', 'logout', 'homes', 'scenes', 'on', 'off', 'monitor', 'activate' ]
+    cmds = [ 'login', 'logout', 'homes', 'scenes', 'on', 'off', 'monitor', 'activate', 'devices', 'query' ]
     if not cmd in cmds:
         print('Syntax: tuya-qr-sharing.py (%s)' % '|'.join(cmds), file=sys.stderr)
         return EXIT_SYNTAX_ERROR;
@@ -271,6 +304,18 @@ def main() -> int:
 
     if cmd == 'scenes':
         return client.scenes()
+
+    if cmd == 'devices':
+        return client.devices()
+
+    if cmd == 'query':
+        try:
+            device_id = sys.argv[2]
+        except IndexError:
+            print('Syntax: tuya-qr-sharing.py query <device_id>', file=sys.stderr)
+            return EXIT_SYNTAX_ERROR
+
+        return client.query_device(device_id)
 
     if cmd == 'activate':
         try:
