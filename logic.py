@@ -40,8 +40,17 @@ class HeatNeededIndicator:
             try:
                 if self.no_heat_tag is not None and vobj.vevent.description.value.find(self.no_heat_tag) >= 0:
                     if self.wrapper is not None:
+                        try:
+                            summary = vobj.vevent.summary.value
+                        except:
+                            summary = '<missing summary>'
+                        try:
+                            description = vobj.vevent.description.value
+                        except:
+                            description = '<missing description>'
+
                         print(self.wrapper.fill("Found event %s with %s in description:\n%s" %
-                            (vobj.vevent.summary.value, self.no_heat_tag, vobj.vevent.description.value)))
+                            (summary, self.no_heat_tag, description)))
                     continue
             except:
                 # no description in event: fine!
