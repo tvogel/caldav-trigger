@@ -3,7 +3,7 @@
 
 import textwrap
 from typing import Annotated
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_500_INTERNAL_SERVER_ERROR
 from logic import HeatNeededIndicator, Event
@@ -21,9 +21,9 @@ security = HTTPBasic(realm=os.getenv("api_realm"))
 users_db = json.loads(os.getenv("api_users"))
 
 indicator = HeatNeededIndicator(
-    preheat_minutes=int(os.getenv("preheat_minutes")),
-    cooloff_minutes=int(os.getenv("cooloff_minutes")),
-    no_heat_tag=os.getenv("no_heat_tag", "NO_HEAT")
+    preheat_minutes=0,  # Placeholder, will be set dynamically
+    cooloff_minutes=0,  # Placeholder, will be set dynamically
+    no_heat_tag=os.getenv("no_heat_tag")
 )
 
 wrapper = textwrap.TextWrapper(initial_indent=' ' * 4, width=80, subsequent_indent=' ' * 8)
@@ -47,11 +47,10 @@ def authenticate_user(username: str, password: str):
         return True
     return False
 
-def get_calendar_events():
+def get_calendar_events(now: datetime.datetime):
     global client, principal, calendar
     try:
-        now = datetime.datetime.now()
-        events = indicator.get_next_events(calendar, now)
+        events = indicator.get_next_events(calendar, now.astimezone())
         return events
     except caldav.error.CaldavError:
         # Reset client on timeout or other CalDAV errors
@@ -64,7 +63,12 @@ def get_calendar_events():
         )
 
 @app.get("/next-events")
-def read_next_events(credentials: Annotated[HTTPBasicCredentials, Depends(security)]) -> list[Event]:
+def read_next_events(
+    credentials: Annotated[HTTPBasicCredentials, Depends(security)],
+    preheat_minutes: Annotated[int, Query(..., ge=0, description="Preheat duration in minutes")],
+    cooloff_minutes: Annotated[int, Query(..., ge=0, description="Cooloff duration in minutes")],
+    now: datetime.datetime = Query(default_factory=datetime.datetime.now, description="Current date-time")
+) -> list[Event]:
     username = credentials.username
     password = credentials.password
     if not authenticate_user(username, password):
@@ -74,7 +78,9 @@ def read_next_events(credentials: Annotated[HTTPBasicCredentials, Depends(securi
             headers={"WWW-Authenticate": f'Basic realm="{security.realm}"'},
         )
 
-    events = get_calendar_events()
+    indicator.preheat_minutes = preheat_minutes
+    indicator.cooloff_minutes = cooloff_minutes
+    events = get_calendar_events(now)
     return events
 
 if __name__ == "__main__":
