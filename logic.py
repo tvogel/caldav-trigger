@@ -3,6 +3,28 @@ import datetime
 import time
 import textwrap
 import caldav
+from dataclasses import dataclass
+
+@dataclass
+class Event:
+    summary: str
+    description: str
+    dtstart: datetime.datetime
+    dtend: datetime.datetime
+
+    def __repr__(self) -> str:
+        return 'Event(%s, %s, %s, %s)' % (self.summary, self.description, self.dtstart, self.dtend)
+
+    def dtstart_unix(self) -> int:
+        return int(time.mktime(self.dtstart.timetuple()))
+
+    @staticmethod
+    def from_vobject(vobj: vobject.base.Component) -> 'Event':
+        try:
+            description = vobj.vevent.description.value
+        except:
+            description = None
+        return Event(vobj.vevent.summary.value, description, vobj.vevent.dtstart.value.astimezone(), vobj.vevent.dtend.value.astimezone())
 
 class HeatNeededIndicator:
     preheat_minutes = 0
@@ -23,7 +45,8 @@ class HeatNeededIndicator:
     def set_wrapper(self, wrapper: textwrap.TextWrapper) -> None:
         self.wrapper = wrapper
 
-    def is_needed(self, calendar: caldav.Calendar, now: datetime.datetime) -> bool:
+    def get_next_events(self, calendar: caldav.Calendar, now: datetime.datetime) -> list[Event]:
+        events = []
         cooloff_timestamp = now + datetime.timedelta(minutes=self.cooloff_minutes,microseconds=1)
         preheat_timestamp = now + datetime.timedelta(minutes=self.preheat_minutes,microseconds=1)
 
@@ -34,6 +57,10 @@ class HeatNeededIndicator:
             # can use shortcut to only search from cooloff_timestamp
             begin_search_window = cooloff_timestamp
             cooloff_timestamp = None
+
+        if self.wrapper is not None:
+            print(self.wrapper.fill("Searching for events between %s and %s" % (begin_search_window, end_search_window)))
+            print(self.wrapper.fill("Cooloff timestamp: %s" % cooloff_timestamp))
 
         for event in calendar.date_search(start=begin_search_window, end=end_search_window):
             vobj = event.vobject_instance
@@ -58,7 +85,11 @@ class HeatNeededIndicator:
 
             if self.wrapper is not None:
                 print(self.wrapper.fill("Found event that needs heating: %s" % summary))
-            return True
 
-        return False
+            events.append(Event.from_vobject(vobj))
+
+        return events
+
+    def is_needed(self, calendar: caldav.Calendar, now: datetime.datetime) -> bool:
+        return len(self.get_next_events(calendar, now)) > 0
 
