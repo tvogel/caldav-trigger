@@ -58,10 +58,6 @@ class HeatNeededIndicator:
             begin_search_window = cooloff_timestamp
             cooloff_timestamp = None
 
-        if self.wrapper is not None:
-            print(self.wrapper.fill("Searching for events between %s and %s" % (begin_search_window, end_search_window)))
-            print(self.wrapper.fill("Cooloff timestamp: %s" % cooloff_timestamp))
-
         for event in calendar.date_search(start=begin_search_window, end=end_search_window):
             vobj = event.vobject_instance
             try:
