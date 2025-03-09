@@ -16,7 +16,7 @@ import dotenv
 dotenv.load_dotenv()
 
 app = FastAPI()
-security = HTTPBasic()
+security = HTTPBasic(realm=os.getenv("api_realm"))
 
 users_db = json.loads(os.getenv("api_users"))
 
@@ -71,7 +71,7 @@ def read_next_events(credentials: Annotated[HTTPBasicCredentials, Depends(securi
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Basic"},
+            headers={"WWW-Authenticate": f'Basic realm="{security.realm}"'},
         )
 
     events = get_calendar_events()
