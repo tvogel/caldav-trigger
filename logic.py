@@ -38,19 +38,16 @@ class HeatNeededIndicator:
         for event in calendar.date_search(start=begin_search_window, end=end_search_window):
             vobj = event.vobject_instance
             try:
+                summary = vobj.vevent.summary.value
+            except: # Missing summary
+                if self.wrapper is not None:
+                    print(self.wrapper.fill("Skipping unnamed event!"))
+                continue
+            try:
                 if self.no_heat_tag is not None and vobj.vevent.description.value.find(self.no_heat_tag) >= 0:
                     if self.wrapper is not None:
-                        try:
-                            summary = vobj.vevent.summary.value
-                        except:
-                            summary = '<missing summary>'
-                        try:
-                            description = vobj.vevent.description.value
-                        except:
-                            description = '<missing description>'
-
                         print(self.wrapper.fill("Found event %s with %s in description:\n%s" %
-                            (summary, self.no_heat_tag, description)))
+                            (summary, self.no_heat_tag, vobj.vevent.description.value)))
                     continue
             except:
                 # no description in event: fine!
@@ -60,7 +57,7 @@ class HeatNeededIndicator:
                 continue
 
             if self.wrapper is not None:
-                print(self.wrapper.fill("Found event that needs heating: %s" % vobj.vevent.summary.value))
+                print(self.wrapper.fill("Found event that needs heating: %s" % summary))
             return True
 
         return False
