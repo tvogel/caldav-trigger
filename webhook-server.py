@@ -11,6 +11,8 @@ from fastapi import Depends, FastAPI, HTTPException
 import uvicorn
 import dotenv
 import importlib
+import datetime
+
 tuya_qr_sharing = importlib.import_module("tuya-qr-sharing")
 
 app = FastAPI()
@@ -54,10 +56,18 @@ def make_client():
   return client
 
 def get_client():
+  now = datetime.datetime.now()
+  if get_client.reconnect_dt and get_client.reconnect_dt <= now:
+    make_client.cache_clear()
+
+  get_client.reconnect_dt = now + datetime.timedelta(seconds=get_client.reconnect_s)
+
   client = make_client()
   client.reload_token_info()
   return client
 
+get_client.reconnect_dt = None
+get_client.reconnect_s = 3600
 
 ConfigDep = Annotated[dict, Depends(get_config)]
 ClientDep = Annotated[tuya_qr_sharing.TuyaQrSharing, Depends(get_client)]
