@@ -47,8 +47,8 @@ class HeatNeededIndicator:
 
     def get_next_events(self, calendar: caldav.Calendar, now: datetime.datetime) -> list[Event]:
         events = []
-        cooloff_timestamp = now + datetime.timedelta(minutes=self.cooloff_minutes,seconds=1)
-        preheat_timestamp = now + datetime.timedelta(minutes=self.preheat_minutes,seconds=1)
+        cooloff_timestamp = now + datetime.timedelta(minutes=self.cooloff_minutes,microseconds=1)
+        preheat_timestamp = now + datetime.timedelta(minutes=self.preheat_minutes,microseconds=1)
 
         begin_search_window = now
         end_search_window = preheat_timestamp
