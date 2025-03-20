@@ -19,12 +19,12 @@ class Event:
         return int(time.mktime(self.dtstart.timetuple()))
 
     @staticmethod
-    def from_vobject(vobj: vobject.base.Component) -> 'Event':
+    def from_vobject(vevent: vobject.base.Component) -> 'Event':
         try:
-            description = vobj.vevent.description.value
+            description = vevent.description.value
         except:
             description = None
-        return Event(vobj.vevent.summary.value, description, vobj.vevent.dtstart.value.astimezone(), vobj.vevent.dtend.value.astimezone())
+        return Event(vevent.summary.value, description, vevent.dtstart.value.astimezone(), vevent.dtend.value.astimezone())
 
 class HeatNeededIndicator:
     preheat_minutes = 0
@@ -60,29 +60,30 @@ class HeatNeededIndicator:
 
         for event in calendar.date_search(start=begin_search_window, end=end_search_window):
             vobj = event.vobject_instance
+            vevent = vobj.vevent_list[-1] # assume that the last entry (if multiple) is the override of a recurrent event - if that proves false, need to filter on recurrence-id, ...
             try:
-                summary = vobj.vevent.summary.value
+                summary = vevent.summary.value
             except: # Missing summary
                 if self.wrapper is not None:
                     print(self.wrapper.fill("Skipping unnamed event!"))
                 continue
             try:
-                if self.no_heat_tag is not None and vobj.vevent.description.value.find(self.no_heat_tag) >= 0:
+                if self.no_heat_tag is not None and vevent.description.value.find(self.no_heat_tag) >= 0:
                     if self.wrapper is not None:
                         print(self.wrapper.fill("Found event %s with %s in description:\n%s" %
-                            (summary, self.no_heat_tag, vobj.vevent.description.value)))
+                            (summary, self.no_heat_tag, vevent.description.value)))
                     continue
             except:
                 # no description in event: fine!
                 pass
-            if cooloff_timestamp is not None and vobj.vevent.dtend.value <= cooloff_timestamp:
+            if cooloff_timestamp is not None and vevent.dtend.value <= cooloff_timestamp:
                 # cooloff already has begun:
                 continue
 
             if self.wrapper is not None:
                 print(self.wrapper.fill("Found event that needs heating: %s" % summary))
 
-            events.append(Event.from_vobject(vobj))
+            events.append(Event.from_vobject(vevent))
 
         return events
 

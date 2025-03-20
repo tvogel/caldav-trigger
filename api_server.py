@@ -50,8 +50,7 @@ def authenticate_user(username: str, password: str):
 def get_calendar_events(now: datetime.datetime):
     global client, principal, calendar
     try:
-        events = indicator.get_next_events(calendar, now.astimezone())
-        return events
+        return indicator.get_next_events(calendar, now.astimezone())
     except caldav.error.CaldavError:
         # Reset client on timeout or other CalDAV errors
         client = create_caldav_client()
