@@ -51,7 +51,7 @@ def get_calendar_events(now: datetime.datetime):
     global client, principal, calendar
     try:
         return indicator.get_next_events(calendar, now.astimezone())
-    except caldav.error.CaldavError:
+    except caldav.error.DAVError:
         # Reset client on timeout or other CalDAV errors
         client = create_caldav_client()
         principal = client.principal()
