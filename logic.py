@@ -67,7 +67,7 @@ class HeatNeededIndicator:
                 if self.wrapper is not None:
                     print(self.wrapper.fill("Skipping unnamed event!"))
                 continue
-            if isinstance(vevent.dtstart.value, datetime.date) or isinstance(vevent.dtend.value, datetime.date):
+            if type(vevent.dtstart.value) == datetime.date or type(vevent.dtend.value) == datetime.date:
                 if self.wrapper is not None:
                     print(self.wrapper.fill("Skipping whole-day event: %s" % summary))
                 continue
